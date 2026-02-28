@@ -1,11 +1,11 @@
-//! Gentoo stage3 image fetching and management
+//! Gentoo stage3 image support
 //!
 //! This crate provides functionality for fetching, parsing, and managing
-//! Gentoo Linux stage3 images for cross-compilation purposes.
+//! Gentoo Linux stage3 images.
 
-pub mod client;
-pub mod error;
-pub mod models;
+mod client;
+mod error;
+mod models;
 
 pub use client::Client;
 pub use error::Error;

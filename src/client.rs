@@ -7,7 +7,7 @@ use log::info;
 use std::io::copy;
 use std::path::Path;
 
-/// Client for interacting with Gentoo stage3 images
+/// Client for interacting with Gentoo distfiles mirrors
 pub struct Client {
     mirror_url: String,
     arch: Arch,
@@ -17,14 +17,14 @@ pub struct Client {
 impl Client {
     /// Create a new Client with default settings
     ///
-    /// Uses distfiles.gentoo.org mirror, x86_64 architecture,
+    /// Uses distfiles.gentoo.org mirror, host architecture,
     /// and a temporary cache directory.
     pub fn new() -> Result<Self, Error> {
         let cache_dir = Cache::Temp(tempfile::tempdir()?);
 
         Ok(Self {
             mirror_url: "https://distfiles.gentoo.org".to_string(),
-            arch: Arch::X86_64,
+            arch: Arch::current()?,
             cache_dir,
         })
     }
@@ -45,20 +45,9 @@ impl Client {
 
     /// Create a new Client with specified cache directory
     pub fn with_cache(cache_dir: impl AsRef<Path>) -> Result<Self, Error> {
-        Ok(Self {
-            mirror_url: "https://distfiles.gentoo.org".to_string(),
-            arch: Arch::X86_64,
-            cache_dir: Cache::Path(cache_dir.as_ref().to_path_buf()),
-        })
-    }
-
-    /// Create a new Client with specified cache directory and architecture
-    pub fn with_cache_and_arch(cache_dir: impl AsRef<Path>, arch: Arch) -> Result<Self, Error> {
-        Ok(Self {
-            mirror_url: "https://distfiles.gentoo.org".to_string(),
-            arch,
-            cache_dir: Cache::Path(cache_dir.as_ref().to_path_buf()),
-        })
+        let mut client = Self::new()?;
+        client.cache_dir = Cache::Path(cache_dir.as_ref().to_path_buf());
+        Ok(client)
     }
 
     /// List all available stage3 images for the configured architecture

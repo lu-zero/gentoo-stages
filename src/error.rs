@@ -3,6 +3,9 @@ use thiserror::Error;
 /// Stage3 fetching and management errors
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("Cannot guess the host architecture: {0}")]
+    Arch(#[from] gentoo_core::Error),
+
     #[error("HTTP error: {0}")]
     HttpError(#[from] reqwest::Error),
 

@@ -5,10 +5,10 @@ edition = "2021"
 rust-version = "1.71.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
-description = "Gentoo stage3 image fetching and management for Rust applications"
+description = "Gentoo stage3 image support"
 repository = "https://github.com/lu-zero/gentoo-stages"
 keywords = ["gentoo", "stages", "stage3", "cross-compilation"]
-categories = ["development-tools", "os::unix-apis"]
+categories = ["development-tools"]
 
 [dependencies]
 gentoo-core = "0.1.0"
