@@ -1,6 +1,5 @@
 use gentoo_core::Arch;
 use gentoo_stages::Client;
-use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
