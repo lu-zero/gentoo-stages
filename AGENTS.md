@@ -3,12 +3,12 @@
 ## Build Commands
 
 ```bash
-cargo test                        # Run all tests (unit + doc)
-cargo clippy -- -D warnings       # Lint — must be warning-free
-cargo fmt --check                 # Format check — must pass
-cargo doc --no-deps               # Build docs — must have no warnings
-cargo run --example list          # Smoke-test the list example
-cargo run --example download      # Smoke-test the download example
+cargo test                                # Run all tests (unit + doc)
+cargo clippy --all-targets -- -D warnings # Lint — must be warning-free
+cargo fmt --check                         # Format check — must pass
+cargo doc --no-deps                       # Build docs — must have no warnings
+cargo run --example list                  # Smoke-test the list example
+cargo run --example download              # Smoke-test the download example
 ```
 
 ## Architecture
