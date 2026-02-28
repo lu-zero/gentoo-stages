@@ -59,7 +59,7 @@ impl Client {
         // Check cache status for each image
         let mut result = Vec::new();
         for mut stage3 in stage3_list {
-            let cache_path = stage3.cache_path(self.cache_dir.path());
+            let cache_path = stage3.cache_path();
             stage3.set_cached(cache_path.exists());
             result.push(stage3);
         }
@@ -165,6 +165,7 @@ impl Client {
                         date,
                         self.arch,
                         variant,
+                        self.cache_dir.path(),
                     ));
                 }
             }
@@ -184,7 +185,7 @@ impl Client {
     fn download_stage3(&self, stage3: &Stage3) -> Result<(), Error> {
         std::fs::create_dir_all(self.cache_dir.path())?;
 
-        let cache_path = stage3.cache_path(self.cache_dir.path());
+        let cache_path = stage3.cache_path();
 
         info!("Downloading stage3 image: {}", stage3.name);
         info!("URL: {}", stage3.url);
@@ -195,7 +196,7 @@ impl Client {
         let bytes = response.bytes()?;
 
         // Write to file
-        let mut file = std::fs::File::create(&cache_path)?;
+        let mut file = std::fs::File::create(cache_path)?;
         copy(&mut bytes.as_ref(), &mut file)?;
 
         info!("Downloaded stage3 image to: {}", cache_path.display());

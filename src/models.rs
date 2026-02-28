@@ -30,6 +30,7 @@ pub struct Stage3 {
     pub date: Option<String>, // Build datetime (extracted from filename)
     pub arch: Arch,           // Architecture
     pub variant: String,      // Variant (e.g., "rv64_lp64d-openrc", "rv32_ilp32d_musl")
+    cache_dir: PathBuf,       // Cache directory where this image is stored
     cached: bool,             // Whether this image is already cached
 }
 
@@ -42,6 +43,7 @@ impl Stage3 {
         date: Option<&str>,
         arch: Arch,
         variant: String,
+        cache_dir: impl AsRef<Path>,
     ) -> Self {
         Self {
             name,
@@ -50,6 +52,7 @@ impl Stage3 {
             date: date.map(|s| s.to_string()),
             arch,
             variant,
+            cache_dir: cache_dir.as_ref().to_path_buf(),
             cached: false,
         }
     }
@@ -60,8 +63,8 @@ impl Stage3 {
     }
 
     /// Get the cache path for this stage3 image
-    pub fn cache_path(&self, cache_dir: impl AsRef<Path>) -> PathBuf {
-        cache_dir.as_ref().join(&self.name)
+    pub fn cache_path(&self) -> &Path {
+        &self.cache_dir
     }
 
     /// Set the cached status

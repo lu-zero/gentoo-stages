@@ -23,11 +23,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // The stage3 image is now downloaded and cached at:
     println!(
         "\nStage3 image cached at: {}",
-        stage3.cache_path("./cache").display()
+        stage3.cache_path().display()
     );
     println!(
         "You can extract it manually using: tar -xJpf {}",
-        stage3.cache_path("./cache").display()
+        stage3.cache_path().display()
     );
 
     Ok(())
