@@ -1,7 +1,7 @@
-use gentoo_stages::{Stage3Fetcher, Target};
 use gentoo_core::Arch;
-use std::path::PathBuf;
+use gentoo_stages::{Stage3Fetcher, Target};
 use std::env;
+use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
@@ -11,7 +11,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if args.len() < 2 {
         eprintln!("Usage: {} <architecture>", args[0]);
-        eprintln!("Supported architectures: arm, aarch64, x86, amd64, riscv32, riscv64, ppc, ppc64");
+        eprintln!(
+            "Supported architectures: arm, aarch64, x86, amd64, riscv32, riscv64, ppc, ppc64"
+        );
         std::process::exit(1);
     }
 
@@ -20,7 +22,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(a) => a,
         Err(_) => {
             eprintln!("Error: Unknown architecture '{}'", arch_str);
-            eprintln!("Supported architectures: arm, aarch64, x86, amd64, riscv32, riscv64, ppc, ppc64");
+            eprintln!(
+                "Supported architectures: arm, aarch64, x86, amd64, riscv32, riscv64, ppc, ppc64"
+            );
             std::process::exit(1);
         }
     };
