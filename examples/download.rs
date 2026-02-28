@@ -5,8 +5,8 @@ use std::path::PathBuf;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    // Example: Download latest stage3 for riscv64
-    let client = Client::with_arch(Arch::Riscv64)?;
+    // Example: Download latest stage3 for riscv64 with persistent cache
+    let client = Client::with_cache_and_arch("./cache", Arch::Riscv64)?;
 
     println!("Fetching latest stage3 image for riscv64...");
     let stage3 = client.get("rv64_lp64d-openrc")?;

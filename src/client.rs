@@ -52,15 +52,24 @@ impl Client {
         })
     }
 
+    /// Create a new Client with specified cache directory and architecture
+    pub fn with_cache_and_arch(cache_dir: impl AsRef<Path>, arch: Arch) -> Result<Self, Error> {
+        Ok(Self {
+            mirror_url: "https://distfiles.gentoo.org".to_string(),
+            arch,
+            cache_dir: Cache::Path(cache_dir.as_ref().to_path_buf()),
+        })
+    }
+
     /// List all available stage3 images for the configured architecture
     pub fn list(&self) -> Result<Vec<Stage3>, Error> {
         let stage3_list = self.fetch_all_stage3_flavors()?;
 
         // Check cache status for each image
         let mut result = Vec::new();
-        for mut stage3 in stage3_list {
-            let cache_path = stage3.cache_path();
-            stage3.set_cached(cache_path.exists());
+        for stage3 in stage3_list {
+            let _cache_path = stage3.cache_path();
+
             result.push(stage3);
         }
 
@@ -76,7 +85,7 @@ impl Client {
 
     /// Get a specific stage3 variant (downloads if not cached)
     pub fn get(&self, variant: &str) -> Result<Stage3, Error> {
-        let mut stage3 = self
+        let stage3 = self
             .list()?
             .into_iter()
             .find(|s| s.variant == variant)
@@ -84,7 +93,6 @@ impl Client {
 
         if !stage3.is_cached() {
             self.download_stage3(&stage3)?;
-            stage3.set_cached(true);
         }
 
         Ok(stage3)

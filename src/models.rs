@@ -31,7 +31,6 @@ pub struct Stage3 {
     pub arch: Arch,           // Architecture
     pub variant: String,      // Variant (e.g., "rv64_lp64d-openrc", "rv32_ilp32d_musl")
     cache_dir: PathBuf,       // Cache directory where this image is stored
-    cached: bool,             // Whether this image is already cached
 }
 
 impl Stage3 {
@@ -53,22 +52,16 @@ impl Stage3 {
             arch,
             variant,
             cache_dir: cache_dir.as_ref().to_path_buf(),
-            cached: false,
         }
     }
 
     /// Check if this stage3 image is cached
     pub fn is_cached(&self) -> bool {
-        self.cached
+        self.cache_dir.join(&self.name).exists()
     }
 
     /// Get the cache path for this stage3 image
     pub fn cache_path(&self) -> &Path {
         &self.cache_dir
-    }
-
-    /// Set the cached status
-    pub(crate) fn set_cached(&mut self, cached: bool) {
-        self.cached = cached;
     }
 }

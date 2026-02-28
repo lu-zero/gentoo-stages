@@ -28,8 +28,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    // Create client for the specified architecture
-    let client = Client::with_arch(arch)?;
+    // Create client for the specified architecture with persistent cache
+    let client = Client::with_cache_and_arch("./cache", arch)?;
 
     println!("Fetching available stage3 images for {}...", arch);
     let stage3_list = client.list()?;
