@@ -64,4 +64,9 @@ impl Stage3 {
     pub fn cache_path(&self) -> &Path {
         &self.cache_dir
     }
+
+    /// Get the full path to the cached stage3 file
+    pub fn file_path(&self) -> PathBuf {
+        self.cache_dir.join(&self.name)
+    }
 }
