@@ -20,11 +20,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Variant: {}", stage3.variant);
     println!("  Cached: {}", stage3.is_cached());
 
-    // Example: Extract to a target directory
-    let target_dir = PathBuf::from("./extracted_stage3");
-    println!("\nExtracting to {}...", target_dir.display());
-    client.extract(&stage3, target_dir)?;
-    println!("Extraction complete!");
+    // The stage3 image is now downloaded and cached at:
+    println!(
+        "\nStage3 image cached at: {}",
+        stage3.cache_path("./cache").display()
+    );
+    println!(
+        "You can extract it manually using: tar -xJpf {}",
+        stage3.cache_path("./cache").display()
+    );
 
     Ok(())
 }

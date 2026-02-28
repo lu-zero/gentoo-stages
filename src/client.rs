@@ -6,7 +6,6 @@ use gentoo_core::Arch;
 use log::info;
 use std::io::copy;
 use std::path::Path;
-use std::process::Command;
 
 /// Client for interacting with Gentoo stage3 images
 pub struct Client {
@@ -200,49 +199,6 @@ impl Client {
         copy(&mut bytes.as_ref(), &mut file)?;
 
         info!("Downloaded stage3 image to: {}", cache_path.display());
-
-        Ok(())
-    }
-
-    /// Extract a stage3 image to target directory
-    pub fn extract(&self, stage3: &Stage3, target_dir: impl AsRef<Path>) -> Result<(), Error> {
-        let cache_path = stage3.cache_path(self.cache_dir.path());
-        let target_dir = target_dir.as_ref();
-
-        if !cache_path.exists() {
-            return Err(Error::ParseError(format!(
-                "Stage3 image not found in cache: {}",
-                cache_path.display()
-            )));
-        }
-
-        info!("Extracting stage3 image: {}", stage3.name);
-        info!("Target directory: {}", target_dir.display());
-
-        std::fs::create_dir_all(target_dir)?;
-
-        let output = Command::new("tar")
-            .arg("--exclude")
-            .arg("dev/*")
-            .arg("-xJpf")
-            .arg(&cache_path)
-            .arg("-C")
-            .arg(target_dir)
-            .output()
-            .map_err(Error::IoError)?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(Error::ExtractError(format!(
-                "Failed to extract {}: {}",
-                stage3.name, stderr
-            )));
-        }
-
-        info!(
-            "Stage3 image extracted successfully to: {}",
-            target_dir.display()
-        );
 
         Ok(())
     }

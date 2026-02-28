@@ -12,9 +12,6 @@ pub enum Error {
     #[error("Stage3 variant not found: {0}")]
     VariantNotFound(String),
 
-    #[error("Failed to extract stage3 image: {0}")]
-    ExtractError(String),
-
     #[error("Stage3 image not found")]
     NotFound,
 
