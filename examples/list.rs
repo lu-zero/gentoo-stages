@@ -1,7 +1,6 @@
 use gentoo_core::Arch;
-use gentoo_stages::{Stage3Fetcher, Target};
+use gentoo_stages::Client;
 use std::env;
-use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
@@ -29,34 +28,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    // Use a default flavor for the architecture
-    let default_flavor = match arch {
-        Arch::Arm => "armv7a-openrc",
-        Arch::AArch64 => "arm64-openrc",
-        Arch::X86 => "x86-openrc",
-        Arch::X86_64 => "amd64-openrc",
-        Arch::Riscv32 => "rv32_ilp32d-openrc",
-        Arch::Riscv64 => "rv64_lp64d-openrc",
-        Arch::Powerpc => "ppc-openrc",
-        Arch::Powerpc64 => "ppc64-openrc",
-    };
+    // Create client for the specified architecture
+    let client = Client::with_arch(arch)?;
 
-    let target = Target {
-        arch,
-        flavor: default_flavor.to_string(),
-    };
+    println!("Fetching available stage3 images for {}...", arch);
+    let stage3_list = client.list()?;
 
-    let cache_dir = PathBuf::from("./cache");
-    let mirror_url = "https://distfiles.gentoo.org";
-
-    let fetcher = Stage3Fetcher::new(target, cache_dir, mirror_url);
-
-    println!("Fetching available stage3 flavors for {}...", arch);
-    let flavors = fetcher.list_available_flavors()?;
-
-    println!("Available flavors for {}:", arch);
-    for flavor in flavors {
-        println!("- {}", flavor);
+    println!("Available stage3 images for {}:", arch);
+    for stage3 in stage3_list {
+        let cached_status = if stage3.is_cached() { "[cached]" } else { "" };
+        let date_display = stage3.date.as_deref().unwrap_or("unknown");
+        println!(
+            "- {} {} ({} bytes, {})",
+            stage3.variant, cached_status, stage3.size, date_display
+        );
     }
 
     Ok(())

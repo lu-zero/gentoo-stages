@@ -3,10 +3,10 @@
 //! This crate provides functionality for fetching, parsing, and managing
 //! Gentoo Linux stage3 images for cross-compilation purposes.
 
+pub mod client;
 pub mod error;
 pub mod models;
-pub mod stage3;
 
-pub use error::Stage3Error;
-pub use models::{Stage3Info, Target};
-pub use stage3::Stage3Fetcher;
+pub use client::Client;
+pub use error::Error;
+pub use models::{Cache, Stage3};

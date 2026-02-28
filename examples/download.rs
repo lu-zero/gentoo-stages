@@ -1,31 +1,30 @@
-use gentoo_stages::{Stage3Fetcher, Target};
 use gentoo_core::Arch;
+use gentoo_stages::Client;
 use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
     // Example: Download latest stage3 for riscv64
-    let target = Target {
-        arch: Arch::Riscv64,
-        flavor: "rv64_lp64d-openrc".to_string(),
-    };
+    let client = Client::with_arch(Arch::Riscv64)?;
 
-    let cache_dir = PathBuf::from("./cache");
-    let mirror_url = "https://distfiles.gentoo.org";
+    println!("Fetching latest stage3 image for riscv64...");
+    let stage3 = client.get("rv64_lp64d-openrc")?;
 
-    let fetcher = Stage3Fetcher::new(target, cache_dir, mirror_url);
-
-    println!("Fetching latest stage3 image...");
-    let stage3 = fetcher.fetch_latest()?;
-
-    println!("Downloaded stage3 image:");
+    println!("Stage3 image information:");
     println!("  Name: {}", stage3.name);
     println!("  URL: {}", stage3.url);
     println!("  Size: {} bytes", stage3.size);
-    println!("  Date: {}", stage3.date);
+    println!("  Date: {}", stage3.date.as_deref().unwrap_or("unknown"));
     println!("  Arch: {}", stage3.arch);
-    println!("  Flavor: {}", stage3.flavor);
+    println!("  Variant: {}", stage3.variant);
+    println!("  Cached: {}", stage3.is_cached());
+
+    // Example: Extract to a target directory
+    let target_dir = PathBuf::from("./extracted_stage3");
+    println!("\nExtracting to {}...", target_dir.display());
+    client.extract(&stage3, target_dir)?;
+    println!("Extraction complete!");
 
     Ok(())
 }
