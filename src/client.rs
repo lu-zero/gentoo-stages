@@ -2,10 +2,10 @@ use crate::{
     error::Error,
     models::{Cache, Stage3},
 };
+use bon::bon;
 use gentoo_core::Arch;
 use log::info;
 use std::io::copy;
-use std::path::Path;
 
 /// Client for interacting with Gentoo distfiles mirrors
 pub struct Client {
@@ -14,40 +14,34 @@ pub struct Client {
     cache_dir: Cache,
 }
 
+#[bon]
 impl Client {
     /// Create a new Client with default settings
     ///
-    /// Uses distfiles.gentoo.org mirror, host architecture,
+    /// Uses <https://distfiles.gentoo.org> mirror, the host architecture,
     /// and a temporary cache directory.
     pub fn new() -> Result<Self, Error> {
-        let cache_dir = Cache::Temp(tempfile::tempdir()?);
+        Client::builder().build()
+    }
+
+    #[builder(builder_type = "ClientBuilder")]
+    pub fn new(
+        mirror_url: Option<&str>,
+        arch: Option<Arch>,
+        cache_dir: Option<Cache>,
+    ) -> Result<Self, Error> {
+        let mirror_url = mirror_url
+            .unwrap_or("https://distfiles.gentoo.org")
+            .to_string();
+        let arch = arch.map_or_else(|| Arch::current(), |a| Ok(a))?;
+        let cache_dir =
+            cache_dir.map_or_else(|| tempfile::tempdir().map(Cache::Temp), |c| Ok(c))?;
 
         Ok(Self {
-            mirror_url: "https://distfiles.gentoo.org".to_string(),
-            arch: Arch::current()?,
+            mirror_url,
+            arch,
             cache_dir,
         })
-    }
-
-    /// Create a new Client with specified architecture
-    pub fn with_arch(arch: Arch) -> Result<Self, Error> {
-        let mut client = Self::new()?;
-        client.arch = arch;
-        Ok(client)
-    }
-
-    /// Create a new Client with specified mirror URL
-    pub fn with_mirror(mirror_url: &str) -> Result<Self, Error> {
-        let mut client = Self::new()?;
-        client.mirror_url = mirror_url.to_string();
-        Ok(client)
-    }
-
-    /// Create a new Client with specified cache directory
-    pub fn with_cache(cache_dir: impl AsRef<Path>) -> Result<Self, Error> {
-        let mut client = Self::new()?;
-        client.cache_dir = Cache::Path(cache_dir.as_ref().to_path_buf());
-        Ok(client)
     }
 
     /// List all available stage3 images for the configured architecture

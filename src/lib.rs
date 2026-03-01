@@ -7,6 +7,6 @@ mod client;
 mod error;
 mod models;
 
-pub use client::Client;
+pub use client::{Client, ClientBuilder};
 pub use error::Error;
 pub use models::{Cache, Stage3};
