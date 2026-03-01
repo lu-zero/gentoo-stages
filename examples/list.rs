@@ -6,7 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let arch = std::env::args()
         .nth(1)
-        .map_or_else(|| Arch::current(), |a| a.parse::<Arch>())?;
+        .map_or_else(Arch::current, |a| a.parse::<Arch>())?;
 
     // Create client for the specified architecture with persistent cache
     let client = Client::builder().arch(arch).cache_dir("./cache").build()?;

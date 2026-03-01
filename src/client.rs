@@ -1,7 +1,4 @@
-use crate::{
-    error::Error,
-    models::{Cache, Stage3},
-};
+use crate::{cache::Cache, error::Error, stage3::Stage3};
 use bon::bon;
 use gentoo_core::Arch;
 use log::info;
