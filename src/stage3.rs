@@ -15,7 +15,7 @@ pub struct Stage3 {
 
 impl Stage3 {
     /// Create a new Stage3 instance
-    pub fn new(
+    fn new(
         name: String,
         url: String,
         size: u64,
