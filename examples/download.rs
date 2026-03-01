@@ -1,5 +1,5 @@
 use gentoo_core::Arch;
-use gentoo_stages::{Cache, Client};
+use gentoo_stages::Client;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
@@ -7,7 +7,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example: Download latest stage3 for riscv64 with persistent cache
     let client = Client::builder()
         .arch(Arch::Riscv64)
-        .cache_dir(Cache::Path("./cache".into()))
+        .cache_dir("./cache")
         .build()?;
 
     println!("Fetching latest stage3 image for riscv64...");

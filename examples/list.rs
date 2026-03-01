@@ -1,38 +1,15 @@
 use gentoo_core::Arch;
-use gentoo_stages::{Cache, Client};
-use std::env;
+use gentoo_stages::Client;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    // Parse architecture from command line argument
-    let args: Vec<String> = env::args().collect();
-
-    if args.len() < 2 {
-        eprintln!("Usage: {} <architecture>", args[0]);
-        eprintln!(
-            "Supported architectures: arm, aarch64, x86, amd64, riscv32, riscv64, ppc, ppc64"
-        );
-        std::process::exit(1);
-    }
-
-    let arch_str = &args[1];
-    let arch = match arch_str.parse::<Arch>() {
-        Ok(a) => a,
-        Err(_) => {
-            eprintln!("Error: Unknown architecture '{}'", arch_str);
-            eprintln!(
-                "Supported architectures: arm, aarch64, x86, amd64, riscv32, riscv64, ppc, ppc64"
-            );
-            std::process::exit(1);
-        }
-    };
+    let arch = std::env::args()
+        .nth(1)
+        .map_or_else(|| Arch::current(), |a| a.parse::<Arch>())?;
 
     // Create client for the specified architecture with persistent cache
-    let client = Client::builder()
-        .arch(arch)
-        .cache_dir(Cache::Path("./cache".into()))
-        .build()?;
+    let client = Client::builder().arch(arch).cache_dir("./cache").build()?;
 
     println!("Fetching available stage3 images for {}...", arch);
     let stage3_list = client.list()?;

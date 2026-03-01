@@ -28,7 +28,7 @@ impl Client {
     pub fn new(
         mirror_url: Option<&str>,
         arch: Option<Arch>,
-        cache_dir: Option<Cache>,
+        #[builder(into)] cache_dir: Option<Cache>,
     ) -> Result<Self, Error> {
         let mirror_url = mirror_url
             .unwrap_or("https://distfiles.gentoo.org")

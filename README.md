@@ -36,14 +36,14 @@ gentoo-core = "0.1.0"
 ### Example: List Available Flavors
 
 ```rust
-use gentoo_stages::{Client, Cache};
+use gentoo_stages::Client;
 use gentoo_core::Arch;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a client for riscv64 architecture
     let client = Client::builder()
         .arch(Arch::Riscv64)
-        .cache_dir(Cache::Path("./cache".into()))
+        .cache_dir("./cache")  // Convenient string literal conversion
         .build()?;
 
     // List all available stage3 images
@@ -61,14 +61,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example: Download Latest Stage3
 
 ```rust
-use gentoo_stages::{Client, Cache};
+use gentoo_stages::Client;
 use gentoo_core::Arch;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a client for riscv64 architecture
     let client = Client::builder()
         .arch(Arch::Riscv64)
-        .cache_dir(Cache::Path("./cache".into()))
+        .cache_dir("./cache")  // Convenient string literal conversion
         .build()?;
 
     // Download specific stage3 variant
