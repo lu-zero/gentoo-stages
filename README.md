@@ -36,25 +36,22 @@ gentoo-core = "0.1.0"
 ### Example: List Available Flavors
 
 ```rust
-use gentoo_stages::{Stage3Fetcher, Target};
+use gentoo_stages::{Client, Cache};
 use gentoo_core::Arch;
-use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let target = Target {
-        arch: Arch::Riscv64,
-        flavor: "rv64_lp64d-openrc".to_string(),
-    };
+    // Create a client for riscv64 architecture
+    let client = Client::builder()
+        .arch(Arch::Riscv64)
+        .cache_dir(Cache::Path("./cache".into()))
+        .build()?;
 
-    let cache_dir = PathBuf::from("./cache");
-    let mirror_url = "https://distfiles.gentoo.org";
+    // List all available stage3 images
+    let stage3_list = client.list()?;
 
-    let fetcher = Stage3Fetcher::new(target, cache_dir, mirror_url);
-    let flavors = fetcher.list_available_flavors()?;
-
-    println!("Available flavors:");
-    for flavor in flavors {
-        println!("- {}", flavor);
+    println!("Available stage3 images:");
+    for stage3 in stage3_list {
+        println!("- {} ({} bytes)", stage3.variant, stage3.size);
     }
 
     Ok(())
@@ -64,24 +61,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example: Download Latest Stage3
 
 ```rust
-use gentoo_stages::{Stage3Fetcher, Target};
+use gentoo_stages::{Client, Cache};
 use gentoo_core::Arch;
-use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let target = Target {
-        arch: Arch::Riscv64,
-        flavor: "rv64_lp64d-openrc".to_string(),
-    };
+    // Create a client for riscv64 architecture
+    let client = Client::builder()
+        .arch(Arch::Riscv64)
+        .cache_dir(Cache::Path("./cache".into()))
+        .build()?;
 
-    let cache_dir = PathBuf::from("./cache");
-    let mirror_url = "https://distfiles.gentoo.org";
-
-    let fetcher = Stage3Fetcher::new(target, cache_dir, mirror_url);
-    let stage3 = fetcher.fetch_latest()?;
+    // Download specific stage3 variant
+    let stage3 = client.get("rv64_lp64d-openrc")?;
 
     println!("Downloaded: {}", stage3.name);
     println!("Size: {} bytes", stage3.size);
+    println!("Cached at: {}", stage3.file_path().display());
 
     Ok(())
 }
@@ -91,20 +86,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 The crate includes working examples:
 
-- `list.rs` - List available stage3 flavors for a given architecture
-- `download.rs` - Download latest stage3 image
+- `list.rs` - List available stage3 images for a given architecture
+- `download.rs` - Download a specific stage3 image
 
 Run examples with:
 
 ```bash
-# List flavors for riscv64
-cargo run --example list_stages -- riscv64
+# List available images for riscv64
+cargo run --example list -- riscv64
 
-# List flavors for amd64
-cargo run --example list_stages -- amd64
+# List available images for amd64
+cargo run --example list -- amd64
 
-# Download latest stage3
-cargo run --example download_stage
+# Download latest stage3 for riscv64
+cargo run --example download
 ```
 
 ## Architecture Support

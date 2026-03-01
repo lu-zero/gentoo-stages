@@ -33,9 +33,8 @@ impl Client {
         let mirror_url = mirror_url
             .unwrap_or("https://distfiles.gentoo.org")
             .to_string();
-        let arch = arch.map_or_else(|| Arch::current(), |a| Ok(a))?;
-        let cache_dir =
-            cache_dir.map_or_else(|| tempfile::tempdir().map(Cache::Temp), |c| Ok(c))?;
+        let arch = arch.map_or_else(Arch::current, Ok)?;
+        let cache_dir = cache_dir.map_or_else(|| tempfile::tempdir().map(Cache::Temp), Ok)?;
 
         Ok(Self {
             mirror_url,

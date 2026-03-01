@@ -1,5 +1,5 @@
 use gentoo_core::Arch;
-use gentoo_stages::Client;
+use gentoo_stages::{Cache, Client};
 use std::env;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -29,7 +29,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // Create client for the specified architecture with persistent cache
-    let client = Client::with_cache_and_arch("./cache", arch)?;
+    let client = Client::builder()
+        .arch(arch)
+        .cache_dir(Cache::Path("./cache".into()))
+        .build()?;
 
     println!("Fetching available stage3 images for {}...", arch);
     let stage3_list = client.list()?;
