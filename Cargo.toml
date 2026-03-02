@@ -1,0 +1,33 @@
+[package]
+name = "gentoo-stages"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88.0"
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
+description = "Gentoo stage3 image support"
+repository = "https://github.com/lu-zero/gentoo-stages"
+keywords = ["gentoo", "stages", "stage3", "cross-compilation"]
+categories = ["development-tools"]
+
+[dependencies]
+gentoo-core = "0.1.0"
+thiserror = "1.0"
+log = "0.4"
+serde = { version = "1.0", features = ["derive"], optional = true }
+tempfile = "3.10"
+reqwest = { version = "0.11", features = ["blocking", "rustls-tls"] }
+bon = "3.9.0"
+
+[dev-dependencies]
+serde_json = "1.0"
+env_logger = "0.10"
+
+[features]
+default = []
+serde_support = ["serde", "gentoo-core/serde_support"]
+
+[profile.release]
+opt-level = 3
+lto = true
+
