@@ -3,6 +3,8 @@
 [![Crates.io](https://img.shields.io/crates/v/gentoo-stages.svg)](https://crates.io/crates/gentoo-stages)
 [![Docs.rs](https://docs.rs/gentoo-stages/badge.svg)](https://docs.rs/gentoo-stages)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/lu-zero/gentoo-stages/actions/workflows/ci.yml/badge.svg)](https://github.com/lu-zero/gentoo-stages/actions/workflows/ci.yml)
+
 
 A Rust crate for fetching and managing Gentoo Linux stage3 images.
 
