@@ -47,6 +47,6 @@ impl Stage3 {
 
     /// Get the architecture-specific cache directory
     pub(crate) fn arch_cache_dir(&self) -> PathBuf {
-        self.cache_dir.join("stages").join(self.arch.as_keyword())
+        self.cache_dir.join("stages").join(self.arch.as_str())
     }
 }

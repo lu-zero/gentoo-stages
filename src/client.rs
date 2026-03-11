@@ -86,7 +86,7 @@ impl Client {
             .cache_dir
             .path()
             .join("stages")
-            .join(self.arch.as_keyword());
+            .join(self.arch.as_str());
 
         let mut cached_files = Vec::new();
 
@@ -128,7 +128,7 @@ impl Client {
         let latest_url = format!(
             "{}/releases/{}/autobuilds/latest-stage3.txt",
             self.mirror_url.trim_end_matches('/'),
-            self.arch.as_keyword()
+            self.arch.as_str()
         );
 
         info!("Fetching all stage3 variants from: {}", latest_url);
@@ -191,7 +191,7 @@ impl Client {
                         format!(
                             "{}/releases/{}/autobuilds/{}",
                             self.mirror_url.trim_end_matches('/'),
-                            self.arch.as_keyword(),
+                            self.arch.as_str(),
                             full_path
                         ),
                         size,
