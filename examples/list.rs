@@ -4,9 +4,10 @@ use gentoo_stages::Client;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let arch = std::env::args()
-        .nth(1)
-        .map_or_else(Arch::current, |a| a.parse::<Arch>())?;
+    let arch = match std::env::args().nth(1) {
+        Some(a) => a.parse()?,
+        None => Arch::current(),
+    };
 
     // Create client for the specified architecture with persistent cache
     let client = Client::builder().arch(arch).cache_dir("./cache").build()?;
