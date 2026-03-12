@@ -2,7 +2,7 @@ use gentoo_core::{Arch, KnownArch};
 use gentoo_stages::Client;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let client = Client::builder()
         .arch(Arch::Known(KnownArch::Riscv64))
