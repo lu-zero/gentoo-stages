@@ -10,7 +10,7 @@ A Rust crate for fetching and managing Gentoo Linux stage3 images.
 
 ## Overview
 
-`gentoo-stages-vibe` provides functionality for working with Gentoo Linux stage3 tarballs, including:
+`gentoo-stages` provides functionality for working with Gentoo Linux stage3 tarballs, including:
 
 - Listing available stage3 flavors for architectures
 - Fetching latest stage3 images from Gentoo mirrors
@@ -20,7 +20,6 @@ A Rust crate for fetching and managing Gentoo Linux stage3 images.
 ## Features
 
 - **Standalone crate** following gentoo-core patterns
-- **No external dependencies** beyond core Rust ecosystem
 - **Clean API** designed for easy integration
 - **Comprehensive error handling** with thiserror
 - **Logging support** via log crate
@@ -31,21 +30,21 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-gentoo-stages = "0.1.0"
-gentoo-core = "0.1.0"
+gentoo-stages = "0.2"
+gentoo-core = "0.3"
 ```
 
 ### Example: List Available Flavors
 
 ```rust
 use gentoo_stages::Client;
-use gentoo_core::Arch;
+use gentoo_core::{Arch, KnownArch};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a client for riscv64 architecture
     let client = Client::builder()
-        .arch(Arch::Riscv64)
-        .cache_dir("./cache")  // Convenient string literal conversion
+        .arch(Arch::Known(KnownArch::Riscv64))
+        .cache_dir("./cache")
         .build()?;
 
     // List all available stage3 images
@@ -64,13 +63,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use gentoo_stages::Client;
-use gentoo_core::Arch;
+use gentoo_core::{Arch, KnownArch};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a client for riscv64 architecture
     let client = Client::builder()
-        .arch(Arch::Riscv64)
-        .cache_dir("./cache")  // Convenient string literal conversion
+        .arch(Arch::Known(KnownArch::Riscv64))
+        .cache_dir("./cache")
         .build()?;
 
     // Download specific stage3 variant
@@ -94,10 +93,10 @@ The crate includes working examples:
 Run examples with:
 
 ```bash
-# List available images for riscv64
-cargo run --example list -- riscv64
+# List available images for current architecture
+cargo run --example list
 
-# List available images for amd64
+# List available images for a specific architecture
 cargo run --example list -- amd64
 
 # Download latest stage3 for riscv64
@@ -117,17 +116,6 @@ Supports all Gentoo architectures via `gentoo-core::Arch`:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
 ## Related Projects
 
 - [gentoo-core](https://github.com/lu-zero/gentoo-core) - Core Gentoo types and utilities
-- [crossdev-stages-rust](https://github.com/lu-zero/crossdev-stages-rust) - Cross-compilation tooling
-
-## Acknowledgments
-
-- Inspired by the original crossdev-stage3 functionality
-- Built on the foundation of gentoo-core
-- Uses Gentoo's official distribution infrastructure
