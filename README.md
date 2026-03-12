@@ -4,6 +4,7 @@
 [![Docs.rs](https://docs.rs/gentoo-stages/badge.svg)](https://docs.rs/gentoo-stages)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/lu-zero/gentoo-stages/actions/workflows/ci.yml/badge.svg)](https://github.com/lu-zero/gentoo-stages/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/lu-zero/gentoo-stages/graph/badge.svg?token=U326K4DQ0I)](https://codecov.io/github/lu-zero/gentoo-stages)
 
 
 A Rust crate for fetching and managing Gentoo Linux stage3 images.
