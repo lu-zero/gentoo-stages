@@ -7,9 +7,11 @@ cargo test                                # Run all tests (unit + doc)
 cargo clippy --all-targets -- -D warnings # Lint — must be warning-free
 cargo fmt --check                         # Format check — must pass
 cargo doc --no-deps                       # Build docs — must have no warnings
-cargo run --example list                  # Smoke-test the list example
-cargo run --example download              # Smoke-test the download example
+cargo run --example list                  # Smoke-test the async list example
+cargo run --example download              # Smoke-test the async download example
 ```
+
+**Note**: Examples now require Tokio runtime and use async/await syntax.
 
 ## Architecture
 
@@ -20,8 +22,31 @@ cargo run --example download              # Smoke-test the download example
 
 ## Dependencies
 
-Minimal: currently only standard library dependencies. Any new dependency must be
+Minimal: currently uses tokio for async runtime and reqwest for HTTP. Any new dependency must be
 justified. Prefer standard library solutions where reasonable.
+
+### Current Dependencies (Async Version)
+
+**Library Dependencies (minimal):**
+- `reqwest`: Async HTTP client with `rustls` + `stream` features
+- `tokio`: Async runtime with `fs` + `io-util` features only (minimal footprint)
+- `futures`: For stream handling utilities
+- Standard library and minimal crates for core functionality
+
+**Dev Dependencies (for examples/tests):**
+- `tokio`: Full feature set for examples that use `#[tokio::main]`
+- `env_logger`: For example logging
+- `serde_json`: For testing
+
+### Tokio Feature Strategy
+
+**Library:** Minimal features (`fs`, `io-util`) - only what's actually used
+- No runtime features needed in library (no task spawning)
+- No macros needed in library (only examples use `#[tokio::main]`)
+
+**Examples/Tests:** Full features for convenience and development
+- Includes `rt`, `macros`, etc. for easy example development
+- Not forced on library users
 
 ## Coding Style
 
@@ -30,6 +55,9 @@ justified. Prefer standard library solutions where reasonable.
 - Doc comments on all public types, fields, and enum variants
 - Keep logic in the module alongside its type
 - Tests live in a `#[cfg(test)] mod tests` block at the bottom of each module
+- **Async Code**: All I/O operations should use async equivalents (`tokio::fs`, async reqwest)
+- **Streaming**: Use streaming for large downloads to conserve memory
+- **Error Handling**: Proper async error propagation with `?` operator
 
 ## Commits
 

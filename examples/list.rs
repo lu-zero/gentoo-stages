@@ -1,7 +1,8 @@
 use gentoo_core::Arch;
 use gentoo_stages::Client;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let arch = match std::env::args().nth(1) {
@@ -13,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::builder().arch(arch).cache_dir("./cache").build()?;
 
     println!("Fetching available stage3 images for {}...", arch);
-    let stage3_list = client.list()?;
+    let stage3_list = client.list().await?;
 
     println!("Available stage3 images for {}:", arch);
     for stage3 in stage3_list {

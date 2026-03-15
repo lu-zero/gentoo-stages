@@ -1,7 +1,8 @@
 use gentoo_core::{Arch, KnownArch};
 use gentoo_stages::Client;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let client = Client::builder()
@@ -10,7 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
 
     println!("Fetching latest stage3 image for riscv64...");
-    let stage3 = client.get("rv64_lp64d-openrc")?;
+    let stage3 = client.get("rv64_lp64d-openrc").await?;
 
     println!("Stage3 image information:");
     println!("  Name: {}", stage3.name);
