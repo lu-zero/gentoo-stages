@@ -20,8 +20,9 @@ A Rust crate for fetching and managing Gentoo Linux stage3 images.
 
 ## Features
 
-- **Standalone crate** following gentoo-core patterns
-- **Clean API** designed for easy integration
+- **Async API** using Tokio runtime for non-blocking I/O operations
+- **Streaming downloads** for memory-efficient large file transfers
+- **Connection pooling** via reusable HTTP client
 - **Comprehensive error handling** with thiserror
 - **Logging support** via log crate
 
@@ -31,25 +32,27 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-gentoo-stages = "0.2"
-gentoo-core = "0.3"
+gentoo-stages = "0.3"
+tokio = { version = "1.0", features = ["full"] }  # Required for async runtime
 ```
 
-### Example: List Available Flavors
+The `gentoo-core` dependency is re-exported, so you don't need to add it explicitly.
+
+### Example: List Available Flavors (Async)
 
 ```rust
-use gentoo_stages::Client;
-use gentoo_core::{Arch, KnownArch};
+use gentoo_stages::{Client, Arch, KnownArch};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a client for riscv64 architecture
     let client = Client::builder()
         .arch(Arch::Known(KnownArch::Riscv64))
         .cache_dir("./cache")
         .build()?;
 
-    // List all available stage3 images
-    let stage3_list = client.list()?;
+    // List all available stage3 images (async)
+    let stage3_list = client.list().await?;
 
     println!("Available stage3 images:");
     for stage3 in stage3_list {
@@ -60,21 +63,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### Example: Download Latest Stage3
+### Example: Download Latest Stage3 (Async)
 
 ```rust
-use gentoo_stages::Client;
-use gentoo_core::{Arch, KnownArch};
+use gentoo_stages::{Client, Arch, KnownArch};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a client for riscv64 architecture
     let client = Client::builder()
         .arch(Arch::Known(KnownArch::Riscv64))
         .cache_dir("./cache")
         .build()?;
 
-    // Download specific stage3 variant
-    let stage3 = client.get("rv64_lp64d-openrc")?;
+    // Download specific stage3 variant (async)
+    let stage3 = client.get("rv64_lp64d-openrc").await?;
 
     println!("Downloaded: {}", stage3.name);
     println!("Size: {} bytes", stage3.size);
@@ -84,12 +87,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Async API
+
+As of version 0.2.0, `gentoo-stages` uses a fully asynchronous API for better performance during I/O-bound operations.
+
+### Benefits of Async
+
+- **Non-blocking I/O**: Better resource utilization during network operations
+- **Streaming downloads**: Memory-efficient handling of large stage3 files
+- **Connection pooling**: Reduced latency for multiple requests
+- **Concurrent operations**: Ability to fetch multiple stage3 images in parallel
+
+### Async Requirements
+
+Your application must:
+
+1. **Use Tokio runtime**: Add `tokio` to your dependencies
+2. **Mark async entry points**: Use `#[tokio::main]` for async main functions
+3. **Use `.await`**: All gentoo-stages methods require `.await`
+
 ## Examples
 
 The crate includes working examples:
 
-- `list.rs` - List available stage3 images for a given architecture
-- `download.rs` - Download a specific stage3 image
+- `list.rs` - List available stage3 images for a given architecture (async)
+- `download.rs` - Download a specific stage3 image (async)
 
 Run examples with:
 

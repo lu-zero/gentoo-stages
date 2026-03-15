@@ -1,14 +1,16 @@
 use crate::{cache::Cache, error::Error, stage3::Stage3};
 use bon::bon;
+use futures::stream::StreamExt;
 use gentoo_core::Arch;
 use log::info;
-use std::io::copy;
+use tokio::io::AsyncWriteExt;
 
 /// Client for interacting with Gentoo distfiles mirrors
 pub struct Client {
     mirror_url: String,
     arch: Arch,
     cache_dir: Cache,
+    http_client: reqwest::Client, // Async HTTP client for connection pooling
 }
 
 #[bon]
@@ -32,18 +34,20 @@ impl Client {
             .to_string();
         let arch = arch.unwrap_or_else(Arch::current);
         let cache_dir = cache_dir.map_or_else(|| tempfile::tempdir().map(Cache::Temp), Ok)?;
+        let http_client = reqwest::Client::new(); // Initialize async HTTP client
 
         Ok(Self {
             mirror_url,
             arch,
             cache_dir,
+            http_client,
         })
     }
 
     /// List all available stage3 images for the configured architecture
     /// Includes both remote images and locally cached images
-    pub fn list(&self) -> Result<Vec<Stage3>, Error> {
-        let mut stage3_list = self.fetch_all_stage3_flavors()?;
+    pub async fn list(&self) -> Result<Vec<Stage3>, Error> {
+        let mut stage3_list = self.fetch_all_stage3_flavors().await?;
 
         // Also include cached stage3 files that might not be in the remote list
         let cached_stage3s = self.scan_cached_stage3_files()?;
@@ -66,15 +70,16 @@ impl Client {
     }
 
     /// Get a specific stage3 variant (downloads if not cached)
-    pub fn get(&self, variant: &str) -> Result<Stage3, Error> {
+    pub async fn get(&self, variant: &str) -> Result<Stage3, Error> {
         let stage3 = self
-            .list()?
+            .list()
+            .await?
             .into_iter()
             .find(|s| s.variant == variant)
             .ok_or_else(|| Error::VariantNotFound(variant.to_string()))?;
 
         if !stage3.is_cached() {
-            self.download_stage3(&stage3)?;
+            self.download_stage3(&stage3).await?;
         }
 
         Ok(stage3)
@@ -124,7 +129,7 @@ impl Client {
     }
 
     /// Fetch the list of all available stage3 images for the architecture
-    fn fetch_all_stage3_flavors(&self) -> Result<Vec<Stage3>, Error> {
+    async fn fetch_all_stage3_flavors(&self) -> Result<Vec<Stage3>, Error> {
         let latest_url = format!(
             "{}/releases/{}/autobuilds/latest-stage3.txt",
             self.mirror_url.trim_end_matches('/'),
@@ -133,8 +138,14 @@ impl Client {
 
         info!("Fetching all stage3 variants from: {}", latest_url);
 
-        // Use reqwest instead of curl
-        let content = reqwest::blocking::get(&latest_url)?.text()?;
+        // Use async reqwest
+        let content = self
+            .http_client
+            .get(&latest_url)
+            .send()
+            .await?
+            .text()
+            .await?;
         self.parse_all_flavors_list(&content)
     }
 
@@ -215,10 +226,10 @@ impl Client {
     }
 
     /// Download a stage3 image
-    fn download_stage3(&self, stage3: &Stage3) -> Result<(), Error> {
+    async fn download_stage3(&self, stage3: &Stage3) -> Result<(), Error> {
         // Create the full architecture-specific directory structure
-        std::fs::create_dir_all(&stage3.cache_dir)?;
-        std::fs::create_dir_all(stage3.arch_cache_dir())?;
+        tokio::fs::create_dir_all(&stage3.cache_dir).await?;
+        tokio::fs::create_dir_all(stage3.arch_cache_dir()).await?;
 
         let cache_path = stage3.file_path();
 
@@ -226,13 +237,16 @@ impl Client {
         info!("URL: {}", stage3.url);
         info!("Size: {} bytes", stage3.size);
 
-        // Use reqwest instead of curl for downloading
-        let response = reqwest::blocking::get(&stage3.url)?;
-        let bytes = response.bytes()?;
+        // Use async reqwest with streaming for memory efficiency
+        let response = self.http_client.get(&stage3.url).send().await?;
+        let mut file = tokio::fs::File::create(&cache_path).await?;
+        let mut stream = response.bytes_stream();
 
-        // Write to file
-        let mut file = std::fs::File::create(&cache_path)?;
-        copy(&mut bytes.as_ref(), &mut file)?;
+        // Stream download to avoid loading entire file in memory
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            file.write_all(&chunk).await?;
+        }
 
         info!("Downloaded stage3 image to: {}", cache_path.display());
 
