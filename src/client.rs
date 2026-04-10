@@ -72,10 +72,8 @@ impl Client {
     /// Get a specific stage3 variant (downloads if not cached)
     pub async fn get(&self, variant: &str) -> Result<Stage3, Error> {
         let stage3 = self
-            .list()
+            .find(variant)
             .await?
-            .into_iter()
-            .find(|s| s.variant == variant)
             .ok_or_else(|| Error::VariantNotFound(variant.to_string()))?;
 
         if !stage3.is_cached() {
@@ -83,6 +81,18 @@ impl Client {
         }
 
         Ok(stage3)
+    }
+
+    /// Find a specific stage3 variant by name without downloading
+    ///
+    /// Returns `None` if the variant is not found in either the remote
+    /// repository or the local cache.
+    ///
+    /// This is more efficient than calling `list()` and filtering manually
+    /// as it avoids unnecessary allocations and iterations.
+    pub async fn find(&self, variant: &str) -> Result<Option<Stage3>, Error> {
+        let stage3_list = self.list().await?;
+        Ok(stage3_list.into_iter().find(|s| s.variant == variant))
     }
 
     /// Scan the cache directory for locally cached stage3 files
