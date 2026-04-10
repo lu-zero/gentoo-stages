@@ -3,7 +3,9 @@ use gentoo_stages::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    tracing_subscriber::fmt()
+        .with_env_filter("gentoo_stages=info")
+        .init();
 
     let arch = match std::env::args().nth(1) {
         Some(a) => a.parse()?,

@@ -2,8 +2,8 @@ use crate::{cache::Cache, error::Error, stage3::Stage3};
 use bon::bon;
 use futures::stream::StreamExt;
 use gentoo_core::Arch;
-use log::info;
 use tokio::io::AsyncWriteExt;
+use tracing::{debug, info};
 
 /// Client for interacting with Gentoo distfiles mirrors
 pub struct Client {
@@ -156,6 +156,8 @@ impl Client {
             .await?
             .text()
             .await?;
+
+        debug!("Received {} bytes from stage3 list", content.len());
         self.parse_all_flavors_list(&content)
     }
 
@@ -244,18 +246,31 @@ impl Client {
         let cache_path = stage3.file_path();
 
         info!("Downloading stage3 image: {}", stage3.name);
-        info!("URL: {}", stage3.url);
-        info!("Size: {} bytes", stage3.size);
+        debug!("URL: {}", stage3.url);
+        debug!("Expected size: {} bytes", stage3.size);
 
         // Use async reqwest with streaming for memory efficiency
         let response = self.http_client.get(&stage3.url).send().await?;
         let mut file = tokio::fs::File::create(&cache_path).await?;
         let mut stream = response.bytes_stream();
 
+        let mut downloaded: u64 = 0;
         // Stream download to avoid loading entire file in memory
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
+            let chunk_len = chunk.len() as u64;
             file.write_all(&chunk).await?;
+            downloaded += chunk_len;
+            debug!(
+                "Downloaded {:>8} / {} bytes ({:.1}%)",
+                downloaded,
+                stage3.size,
+                if stage3.size > 0 {
+                    (downloaded as f64 / stage3.size as f64) * 100.0
+                } else {
+                    0.0
+                }
+            );
         }
 
         info!("Downloaded stage3 image to: {}", cache_path.display());
