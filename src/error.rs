@@ -20,4 +20,7 @@ pub enum Error {
 
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
+
+    #[error("Size mismatch: expected {expected} bytes, got {got}")]
+    SizeMismatch { expected: u64, got: u64 },
 }

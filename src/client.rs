@@ -231,28 +231,26 @@ impl Client {
 
     /// Download a stage3 image
     async fn download_stage3(&self, stage3: &Stage3) -> Result<(), Error> {
-        // Create the full architecture-specific directory structure
-        tokio::fs::create_dir_all(&stage3.cache_dir).await?;
-        tokio::fs::create_dir_all(stage3.arch_cache_dir()).await?;
+        let arch_cache_dir = stage3.arch_cache_dir();
+        tokio::fs::create_dir_all(&arch_cache_dir).await?;
 
         let cache_path = stage3.file_path();
 
         info!("Downloading stage3 image: {}", stage3.name);
         debug!("URL: {}", stage3.url);
-        debug!("Expected size: {} bytes", stage3.size);
 
-        // Use async reqwest with streaming for memory efficiency
         let response = self.http_client.get(&stage3.url).send().await?;
-        let mut file = tokio::fs::File::create(&cache_path).await?;
+
+        let temp_file = tempfile::NamedTempFile::new_in(&arch_cache_dir)?;
+        let std_file = temp_file.as_file().try_clone()?;
+        let mut file = tokio::fs::File::from_std(std_file);
         let mut stream = response.bytes_stream();
 
         let mut downloaded: u64 = 0;
-        // Stream download to avoid loading entire file in memory
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
-            let chunk_len = chunk.len() as u64;
+            downloaded += chunk.len() as u64;
             file.write_all(&chunk).await?;
-            downloaded += chunk_len;
             debug!(
                 "Downloaded {:>8} / {} bytes ({:.1}%)",
                 downloaded,
@@ -264,6 +262,19 @@ impl Client {
                 }
             );
         }
+        file.flush().await?;
+        drop(file);
+
+        if stage3.size > 0 && downloaded != stage3.size {
+            return Err(Error::SizeMismatch {
+                expected: stage3.size,
+                got: downloaded,
+            });
+        }
+
+        temp_file
+            .persist(&cache_path)
+            .map_err(|e| Error::IoError(e.error))?;
 
         info!("Downloaded stage3 image to: {}", cache_path.display());
 
@@ -271,21 +282,11 @@ impl Client {
     }
 }
 
-/// Extract timestamp from stage3 filename
+/// Extract timestamp from stage3 filename as a sortable integer
 fn extract_timestamp(filename: &str) -> u64 {
-    let parts: Vec<&str> = filename.split('-').collect();
-    if parts.len() >= 4 {
-        let last_part = parts[parts.len() - 1];
-        let timestamp_part = last_part
-            .replace(".tar.xz", "")
-            .replace("T", "")
-            .replace("Z", "");
-
-        if let Ok(ts) = timestamp_part.parse::<u64>() {
-            return ts;
-        }
-    }
-    0
+    extract_date_from_filename(filename)
+        .and_then(|ts| ts.replace('T', "").trim_end_matches('Z').parse().ok())
+        .unwrap_or(0)
 }
 
 /// Extract variant from stage3 filename
