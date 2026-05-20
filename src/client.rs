@@ -10,7 +10,7 @@ pub struct Client {
     mirror_url: String,
     arch: Arch,
     cache_dir: Cache,
-    http_client: reqwest::Client, // Async HTTP client for connection pooling
+    http_client: reqwest::Client,
 }
 
 #[bon]
@@ -34,7 +34,7 @@ impl Client {
             .to_string();
         let arch = arch.unwrap_or_else(Arch::current);
         let cache_dir = cache_dir.map_or_else(|| tempfile::tempdir().map(Cache::Temp), Ok)?;
-        let http_client = reqwest::Client::new(); // Initialize async HTTP client
+        let http_client = reqwest::Client::new();
 
         Ok(Self {
             mirror_url,
@@ -49,21 +49,18 @@ impl Client {
     pub async fn list(&self) -> Result<Vec<Stage3>, Error> {
         let mut stage3_list = self.fetch_all_stage3_flavors().await?;
 
-        // Also include cached stage3 files that might not be in the remote list
         let cached_stage3s = self.scan_cached_stage3_files()?;
 
-        // Merge the lists, removing duplicates (prioritize remote list)
         for cached in cached_stage3s {
             if !stage3_list.iter().any(|s| s.name == cached.name) {
                 stage3_list.push(cached);
             }
         }
 
-        // Sort by date (newest first)
         stage3_list.sort_by(|a, b| {
             let a_ts = extract_timestamp(&a.name);
             let b_ts = extract_timestamp(&b.name);
-            b_ts.cmp(&a_ts) // Descending order
+            b_ts.cmp(&a_ts)
         });
 
         Ok(stage3_list)
@@ -87,9 +84,6 @@ impl Client {
     ///
     /// Returns `None` if the variant is not found in either the remote
     /// repository or the local cache.
-    ///
-    /// This is more efficient than calling `list()` and filtering manually
-    /// as it avoids unnecessary allocations and iterations.
     pub async fn find(&self, variant: &str) -> Result<Option<Stage3>, Error> {
         let stage3_list = self.list().await?;
         Ok(stage3_list.into_iter().find(|s| s.variant == variant))
@@ -148,7 +142,6 @@ impl Client {
 
         info!("Fetching all stage3 variants from: {}", latest_url);
 
-        // Use async reqwest
         let content = self
             .http_client
             .get(&latest_url)
@@ -204,7 +197,6 @@ impl Client {
                     .unwrap_or(&full_path)
                     .to_string();
 
-                // Handle both standard stage3-*.tar.xz and alternative musl naming formats
                 if name.starts_with("stage3-") {
                     let date = extract_date_from_filename(&name);
                     let variant = extract_variant_from_filename(&name);

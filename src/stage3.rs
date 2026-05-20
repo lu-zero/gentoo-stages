@@ -4,13 +4,13 @@ use std::path::{Path, PathBuf};
 /// Information about a stage3 image
 #[derive(Debug, Clone)]
 pub struct Stage3 {
-    pub name: String,         // e.g., "stage3-riscv64-openrc-20231018T010001Z.tar.xz"
-    pub url: String,          // Full download URL
-    pub size: u64,            // Size in bytes
-    pub date: Option<String>, // Build datetime (extracted from filename)
-    pub arch: Arch,           // Architecture
-    pub variant: String,      // Variant (e.g., "rv64_lp64d-openrc", "rv32_ilp32d_musl")
-    pub(crate) cache_dir: PathBuf, // Base cache directory (e.g., "/path/to/cache")
+    pub name: String,
+    pub url: String,
+    pub size: u64,
+    pub date: Option<String>,
+    pub arch: Arch,
+    pub variant: String,
+    pub(crate) cache_dir: PathBuf,
 }
 
 impl Stage3 {

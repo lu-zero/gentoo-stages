@@ -20,7 +20,6 @@ impl Cache {
     }
 }
 
-// Implement Into<Cache> for various path types to enable convenient builder usage
 impl<T> From<T> for Cache
 where
     T: Into<PathBuf>,
