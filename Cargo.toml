@@ -1,6 +1,6 @@
 [package]
 name = "gentoo-stages"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 rust-version = "1.88.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
@@ -11,7 +11,7 @@ keywords = ["gentoo", "stages", "stage3", "cross-compilation"]
 categories = ["development-tools"]
 
 [dependencies]
-gentoo-core = "0.4.0"
+gentoo-core = "0.5.0"
 thiserror = "2.0"
 tracing = "0.1"
 serde = { version = "1.0", features = ["derive"], optional = true }
